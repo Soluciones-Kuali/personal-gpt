@@ -1,0 +1,34 @@
+{
+  "menu": {
+    "logout": "Cerrar sesión"
+  },
+  "login": {
+    "title": "Inicia sesión",
+    "email": "Email",
+    "password": "Contraseña",
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta",
+    "forgotPassword": "Olvidaste tu contraseña?",
+    "error": {
+      "title": "Error al iniciar sesión {error}",
+      "description": "Email o contraseña incorrectos"
+    }
+  },
+  "register": {
+    "title": "Crear cuenta",
+    "email": "Email",
+    "phone": "Teléfono",
+    "name": "Nombre",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "register": "Crear cuenta",
+    "error": {
+      "title": "Error al crear la cuenta {error}",
+      "description": "Email o contraseña incorrectos",
+      "passwordConfirmation": "Las contraseñas no coinciden"
+    }
+  },
+  "chat": {
+    "welcome": "Bienvenido a Personal GPT, {name}"
+  }
+}
