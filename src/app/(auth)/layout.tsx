@@ -22,7 +22,7 @@ export default function AuthLayout({
   return (
     <ProtectedLayout>
       <div className="w-full h-screen">
-        <div className="flex justify-end">
+        <div className="absolute">
           <ListItem onClick={() => signOut()}>
             <ListItemButton>
               <ListItemIcon>

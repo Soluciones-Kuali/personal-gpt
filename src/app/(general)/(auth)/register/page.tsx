@@ -39,11 +39,7 @@ export default function Register() {
 
   const password = useWatch({ name: 'password', control });
 
-  const handleOnSubmit = async ({
-    email,
-    name,
-    password,
-  }: RegisterForm) => {
+  const handleOnSubmit = async ({ email, name, password }: RegisterForm) => {
     setLoading(true);
 
     try {
@@ -89,6 +85,7 @@ export default function Register() {
         className="!mb-8"
         type="password"
         label={t('password')}
+        autoComplete="new-password"
       />
       <FormInput
         {...register('passwordConfirmation', {
@@ -103,6 +100,7 @@ export default function Register() {
         className="!mb-20"
         type="password"
         label={t('confirmPassword')}
+        autoComplete="new-password"
         error={
           formState.errors.passwordConfirmation?.type === 'validate'
             ? t('error.passwordConfirmation')
@@ -119,6 +117,14 @@ export default function Register() {
         loading={loading}
       >
         {t('register')}
+      </Button>
+      <Button
+        className="!mt-4"
+        color="primary"
+        onClick={() => router.push(ROUTES.LOGIN)}
+        disabled={loading}
+      >
+        {t('login')}
       </Button>
     </div>
   );

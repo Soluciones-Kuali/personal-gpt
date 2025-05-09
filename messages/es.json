@@ -22,6 +22,7 @@
     "password": "Contraseña",
     "confirmPassword": "Confirmar contraseña",
     "register": "Crear cuenta",
+    "login": "Iniciar sesión",
     "error": {
       "title": "Error al crear la cuenta {error}",
       "description": "Email o contraseña incorrectos",
@@ -29,6 +30,15 @@
     }
   },
   "chat": {
-    "welcome": "Bienvenido a Personal GPT, {name}"
+    "welcome": "Bienvenido a Personal GPT, {name}",
+    "prompts": {
+      "title": "Prompts",
+      "description": "Selecciona un prompt para empezar a chatear",
+      "customPrompt": "Escribe tu propio prompt",
+      "emptyState": "No tienes prompts guardados",
+      "placeholder": "Responde como un experto en...",
+      "close": "Cerrar",
+      "save": "Crear prompt"
+    }
   }
 }

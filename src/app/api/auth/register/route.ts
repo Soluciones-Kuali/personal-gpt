@@ -37,7 +37,6 @@ export async function POST(req: NextRequest) {
   const newUser = await models.users.create({
     email,
     name,
-    shop_name: 'Personal GPT',
     hashed_password: hashedPassword,
   });
 
