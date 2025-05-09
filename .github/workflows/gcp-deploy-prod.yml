@@ -137,6 +137,7 @@ jobs:
             AUTH_TRUST_HOST=true
           secrets: |
             DATABASE_URL=DATABASE_URL_GPTP_SK:latest
+          cloudsql-instances: soluciones-kuali-reborn:us-central1:kuali
 
       - name: Allow unauthenticated invocations
         run: |
