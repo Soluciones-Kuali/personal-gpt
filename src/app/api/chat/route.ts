@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sequelize, { models } from '@/utils/database';
-const axios = require('axios');
+import axios from 'axios';
 import { auth } from '@/auth';
 
 export async function POST(req: NextRequest) {
