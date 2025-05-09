@@ -70,6 +70,7 @@ export default function Chat() {
             {...register('message', { required: true })}
             disabled={createChat.isPending}
             label=""
+            onEnter={handleSubmit(handleOnSubmit)}
           />
           <IconButton
             className="mt-2"
