@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   console.log('session.user.id', session.user.id);
+  console.log('req', req);
 
   const prompts = await models.user_prompts.findAll({
     where: { user_id: session.user.id },
