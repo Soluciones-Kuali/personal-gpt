@@ -3,14 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import sequelize, { models } from '@/utils/database';
 import { auth } from '@/auth';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await auth();
 
   if (!session?.user)
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-  console.log('session.user.id', session.user.id);
-  console.log('req', req);
 
   const prompts = await models.user_prompts.findAll({
     where: { user_id: session.user.id },
