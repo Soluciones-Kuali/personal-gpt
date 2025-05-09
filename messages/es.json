@@ -6,7 +6,7 @@
     "title": "Inicia sesión",
     "email": "Email",
     "password": "Contraseña",
-    "login": "Iniciar sesión",
+    "login": "Bienvenido",
     "register": "Crear cuenta",
     "forgotPassword": "Olvidaste tu contraseña?",
     "error": {
@@ -22,7 +22,7 @@
     "password": "Contraseña",
     "confirmPassword": "Confirmar contraseña",
     "register": "Crear cuenta",
-    "login": "Iniciar sesión",
+    "login": "Bienvenido",
     "error": {
       "title": "Error al crear la cuenta {error}",
       "description": "Email o contraseña incorrectos",

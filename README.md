@@ -46,8 +46,8 @@ npm install -g pnpm
 1. **Clone the repository**:
 
    ```bash
-   git clone git@github.com:Soluciones-Kuali/sc-app-backoffice.git
-   cd sc-app-backoffice
+   git clone git@github.com:Soluciones-Kuali/personal-gpt.git
+   cd personal-gpt
    ```
 
 2. **Install dependencies with pnpm**:
