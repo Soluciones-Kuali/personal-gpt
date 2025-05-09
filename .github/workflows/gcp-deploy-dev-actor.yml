@@ -131,16 +131,16 @@ jobs:
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.CONTAINER }}:ga-dev-${{ github.sha }}
           env_vars: |
-            NEXTAUTH_URL=${{ github.actor }}-dynamic-url-will-go-here
+            AUTH_URL=${{ github.actor }}-dynamic-url-will-go-here
           secrets: |
             DATABASE_URL=DATABASE_URL_GPTP_SK:latest
           cloudsql-instances: soluciones-kuali-reborn:us-central1:kuali
       
-      - name: Set correct NEXTAUTH_URL with Cloud Run URL
+      - name: Set correct AUTH_URL with Cloud Run URL
         run: |
           gcloud run services update ${{ env.SERVICE }} \
             --region ${{ env.REGION }} \
-            --update-env-vars=NEXTAUTH_URL=${{ steps.deploy.outputs.url }},NEXTAUTH_TRUST_HOST=true
+            --update-env-vars=AUTH_URL=${{ steps.deploy.outputs.url }},AUTH_TRUST_HOST=true
 
       - name: Allow unauthenticated invocations
         run: |
