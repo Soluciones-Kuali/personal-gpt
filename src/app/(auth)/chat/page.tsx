@@ -11,11 +11,14 @@ import SendIcon from '@mui/icons-material/Send';
 import DynamicFormIcon from '@mui/icons-material/DynamicForm';
 import Tooltip from '@mui/material/Tooltip';
 import Badge from '@mui/material/Badge';
+import Slider from '@mui/material/Slider';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { FormInput } from '@/components/FormInput';
 import { createChat as createChatService } from '@/app/services/chat';
 import { getPrompts } from '@/app/services/prompts';
 import { QUERY_KEYS } from '@/constants';
+import { Typewriter } from '@/components/Typewriter';
 
 import PromptModal from './PromptModal';
 
@@ -29,6 +32,7 @@ const defaultValues = {
 
 export default function Chat() {
   const [openModal, setOpenModal] = useState<boolean>(false);
+  const [temperature, setTemperature] = useState<number>(0.3);
 
   const t = useTranslations('chat');
   const { data } = useSession();
@@ -44,7 +48,8 @@ export default function Chat() {
   });
 
   const createChat = useMutation({
-    mutationFn: createChatService,
+    mutationFn: (message: string) =>
+      createChatService({ message, temperature }),
     onSuccess: () => {
       // reset({ message: '' });
     },
@@ -65,6 +70,7 @@ export default function Chat() {
             {...register('message', { required: true })}
             disabled={createChat.isPending}
             label=""
+            onEnter={handleSubmit(handleOnSubmit)}
           />
           <IconButton
             className="mt-2"
@@ -76,14 +82,52 @@ export default function Chat() {
             <SendIcon />
           </IconButton>
         </div>
-        <div className="absolute bottom-0 right-0 p-4">
-          <Tooltip arrow title={t('prompts.title')}>
-            <IconButton color="primary" onClick={() => setOpenModal(true)}>
-              <Badge badgeContent={prompts.data?.length ?? 0} color="error">
-                <DynamicFormIcon />
-              </Badge>
-            </IconButton>
-          </Tooltip>
+        <div className="absolute w-full bottom-0 right-0 p-4">
+          <div className="flex justify-between gap-2">
+            <div className="w-1/3">
+              <Slider
+                defaultValue={0.3}
+                step={0.1}
+                marks={[
+                  {
+                    value: 0,
+                    label: '0',
+                  },
+                  {
+                    value: 0.5,
+                    label: '0.5',
+                  },
+                  {
+                    value: 1,
+                    label: '1',
+                  },
+                ]}
+                min={0}
+                max={1}
+                valueLabelDisplay="on"
+                onChange={(e, value) => {
+                  setTemperature(value as number);
+                }}
+              />
+            </div>
+            <Tooltip arrow title={t('prompts.title')}>
+              <IconButton color="primary" onClick={() => setOpenModal(true)}>
+                <Badge badgeContent={prompts.data?.length ?? 0} color="error">
+                  <DynamicFormIcon />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+          </div>
+        </div>
+        <div className="mt-5">
+          {createChat.isPending && (
+            <div className="flex items-center justify-center">
+              <CircularProgress size="30px" />
+            </div>
+          )}
+          {createChat.isSuccess && (
+            <Typewriter text={createChat.data as string} />
+          )}
         </div>
       </div>
       <PromptModal

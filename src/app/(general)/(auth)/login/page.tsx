@@ -55,12 +55,14 @@ export default function Login() {
         {...register('email', { required: true })}
         className="!mb-10"
         label={t('email')}
+        onEnter={handleSubmit(handleOnSubmit)}
       />
       <FormInput
         {...register('password', { required: true })}
         className="!mb-20"
         type="password"
         label={t('password')}
+        onEnter={handleSubmit(handleOnSubmit)}
       />
       <Button
         variant="contained"

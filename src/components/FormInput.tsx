@@ -19,6 +19,7 @@ type FormInputProps = {
   selectOnFocus?: boolean;
   textarea?: boolean;
   type?: string;
+  onEnter?: () => void;
 };
 
 export function FormInput({
@@ -35,6 +36,7 @@ export function FormInput({
   selectOnFocus = false,
   textarea = false,
   type = 'text',
+  onEnter,
   ...props
 }: FormInputProps) {
   return (
@@ -54,6 +56,12 @@ export function FormInput({
         size="small"
         multiline={textarea}
         onFocus={({ target }) => (selectOnFocus ? target.select() : null)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            onEnter?.();
+            event.preventDefault();
+          }
+        }}
         rows={textarea ? 2 : 1}
         type={numeric ? 'number' : type}
         error={!!error}
