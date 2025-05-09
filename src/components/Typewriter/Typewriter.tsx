@@ -13,7 +13,7 @@ export function Typewriter({ text, onDone }: TypewriterProps) {
     if (visibleCount < words.length) {
       const timeout = setTimeout(() => {
         setVisibleCount((prev) => prev + 1);
-      }, 300);
+      }, 150);
       return () => clearTimeout(timeout);
     } else {
       if (onDone) onDone();

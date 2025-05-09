@@ -93,16 +93,16 @@ export default function Chat() {
                     label: '0',
                   },
                   {
+                    value: 0.5,
+                    label: '0.5',
+                  },
+                  {
                     value: 1,
                     label: '1',
                   },
-                  {
-                    value: 2,
-                    label: '2',
-                  },
                 ]}
                 min={0}
-                max={2}
+                max={1}
                 valueLabelDisplay="on"
                 onChange={(e, value) => {
                   setTemperature(value as number);
