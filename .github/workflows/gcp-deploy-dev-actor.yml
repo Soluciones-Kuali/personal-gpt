@@ -1,0 +1,163 @@
+# This workflow build and push a Docker container to Google Artifact Registry and deploy it on Cloud Run when a commit is pushed to the "master" branch
+#
+# Overview:
+#
+# 1. Authenticate to Google Cloud
+# 2. Authenticate Docker to Artifact Registry
+# 3. Build a docker container
+# 4. Publish it to Google Artifact Registry
+# 5. Deploy it to Cloud Run
+#
+# To configure this workflow:
+#
+# 1. Ensure the required Google Cloud APIs are enabled:
+#
+#    Cloud Run            run.googleapis.com
+#    Artifact Registry    artifactregistry.googleapis.com
+#
+# 2. Create and configure Workload Identity Federation for GitHub (https://github.com/google-github-actions/auth#setting-up-workload-identity-federation)
+#
+# 3. Ensure the required IAM permissions are granted
+#
+#    Cloud Run
+#      roles/run.admin
+#      roles/iam.serviceAccountUser     (to act as the Cloud Run runtime service account)
+#
+#    Artifact Registry
+#      roles/artifactregistry.admin     (project or repository level)
+#
+#    NOTE: You should always follow the principle of least privilege when assigning IAM roles
+#
+# 4. Create GitHub secrets for WIF_PROVIDER and WIF_SERVICE_ACCOUNT
+#
+# 5. Change the values for the GAR_LOCATION, SERVICE and REGION environment variables (below).
+#
+# NOTE: To use Google Container Registry instead, replace ${{ env.GAR_LOCATION }}-docker.pkg.dev with gcr.io
+#
+# For more support on how to run this workflow, please visit https://github.com/marketplace/actions/deploy-to-cloud-run
+#
+# Further reading:
+#   Cloud Run IAM permissions                 - https://cloud.google.com/run/docs/deploying
+#   Artifact Registry IAM permissions         - https://cloud.google.com/artifact-registry/docs/access-control#roles
+#   Container Registry vs Artifact Registry   - https://cloud.google.com/blog/products/application-development/understanding-artifact-registry-vs-container-registry
+#   Principle of least privilege              - https://cloud.google.com/blog/products/identity-security/dont-get-pwned-practicing-the-principle-of-least-privilege
+
+name: Build and Deploy - ACTOR - environment. V1.0
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  REPOSITORY: personal-gpt
+  PROJECT_ID: soluciones-kuali-reborn
+  GAR_LOCATION: us-central1
+  CONTAINER: personal-gpt
+  SERVICE: servicio-personal-gpt
+  REGION: us-central1
+  AUTH_PROVIDER: gptp-prov
+  AUTH_POOL: wip-gptp
+  PROJECT_NUMBER: 1034537118374
+  SERVICE_ACCOUNT: gptp-sa@soluciones-kuali-reborn.iam.gserviceaccount.com
+  WIP_PROVIDER: projects/1034537118374/locations/global/workloadIdentityPools/wip-gptp/providers/gptp-prov
+jobs:
+  deploy:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      pull-requests: 'write'
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: ${{ env.WIP_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+      # Authenticate Docker to Google Cloud Artifact Registry
+      - name: Docker Auth
+        id: docker-auth
+        uses: 'docker/login-action@v1'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+          registry: '${{ env.GAR_LOCATION }}-docker.pkg.dev' 
+      
+      - name: Create Artifact Registry Repository if not exists
+        run: |
+          REPO_NAME=${{ env.REPOSITORY }}
+          REGION=${{ env.GAR_LOCATION }}
+          PROJECT_ID=${{ env.PROJECT_ID }}
+          EXISTING_REPO=$(gcloud artifacts repositories list --location=$REGION --filter="name~'$REPO_NAME'" --format="value(name)")
+          
+          if [ -z "$EXISTING_REPO" ]; then
+            echo "Creating repository '$REPO_NAME' in region '$REGION'"
+            gcloud artifacts repositories create $REPO_NAME \
+              --repository-format=DOCKER \
+              --location=$REGION \
+              --description="Docker repository for $REPO_NAME"
+          else
+            echo "Repository '$REPO_NAME' already exists."
+          fi
+
+      - name: Build and push Container
+        run: |-
+          echo '${{ secrets.GPTP_ENV_DEV }}' > ./.env
+          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.CONTAINER }}:ga-dev-${{ github.sha }}" .
+          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.CONTAINER }}:ga-dev-${{ github.sha }}"
+
+      # END - Docker auth and build
+      
+      - name: Set service name dynamically
+        run: |
+          echo "SERVICE=${CONTAINER}-$(echo '${{ github.actor }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Debug environment variables
+        run: |
+          echo "SERVICE: ${{ env.SERVICE }}"
+          echo "CONTAINER: ${{ env.CONTAINER }}"
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.CONTAINER }}:ga-dev-${{ github.sha }}
+          env_vars: |
+            NEXTAUTH_URL=${{ github.actor }}-dynamic-url-will-go-here
+      
+      - name: Set correct NEXTAUTH_URL with Cloud Run URL
+        run: |
+          gcloud run services update ${{ env.SERVICE }} \
+            --region ${{ env.REGION }} \
+            --update-env-vars=NEXTAUTH_URL=${{ steps.deploy.outputs.url }},NEXTAUTH_TRUST_HOST=true
+
+      - name: Allow unauthenticated invocations
+        run: |
+          gcloud run services add-iam-policy-binding ${{ env.SERVICE }} \
+            --region ${{ env.REGION }} \
+            --member="allUsers" \
+            --role="roles/run.invoker" \
+            --project ${{ env.PROJECT_ID }}
+
+      - name: Show Output
+        run: echo "${{ steps.deploy.outputs.url }} :rocket:" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on the PR with the Cloud Run URL
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const url = `The service is deployed at: ${{ steps.deploy.outputs.url }} :rocket:`;
+            github.rest.issues.createComment({
+              issue_number: ${{ github.event.pull_request.number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: url
+            });
