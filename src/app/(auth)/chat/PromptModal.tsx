@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
 import Dialog from '@mui/material/Dialog';
